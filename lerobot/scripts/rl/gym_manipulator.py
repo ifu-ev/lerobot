@@ -70,21 +70,28 @@ from lerobot.common.utils.robot_utils import busy_wait
 from lerobot.common.utils.utils import log_say
 from lerobot.configs import parser
 
+from lerobot.common.teleoperators.panda_leader import PandaTeleoperatorConfig, PandaTeleoperator
+from lerobot.common.robots.panda_follower import PandaConfig, PandaRobot
+
 logging.basicConfig(level=logging.INFO)
 
 
 def reset_follower_position(robot_arm, target_position):
-    current_position_dict = robot_arm.bus.sync_read("Present_Position")
-    current_position = np.array(
-        [current_position_dict[name] for name in current_position_dict], dtype=np.float32
-    )
-    trajectory = torch.from_numpy(
-        np.linspace(current_position, target_position, 50)
-    )  # NOTE: 30 is just an arbitrary number
-    for pose in trajectory:
-        action_dict = dict(zip(current_position_dict, pose, strict=False))
-        robot_arm.bus.sync_write("Goal_Position", action_dict)
-        busy_wait(0.015)
+    # current_position_dict = robot_arm.bus.sync_read("Present_Position")
+    # current_position = np.array(
+    #     [current_position_dict[name] for name in current_position_dict], dtype=np.float32
+    # )
+    # trajectory = torch.from_numpy(
+    #     np.linspace(current_position, target_position, 50)
+    # )  # NOTE: 30 is just an arbitrary number
+    # for pose in trajectory:
+    #     action_dict = dict(zip(current_position_dict, pose, strict=False))
+    #     robot_arm.bus.sync_write("Goal_Position", action_dict)
+    #     busy_wait(0.015)
+    current_postion = robot_arm.get_pose()
+    logging.info(current_postion)
+    home = [0.61, -0.01, 0.52, 0.93, -0.34, 0.02, -0.04]
+    robot_arm.send_cart_pose_action(home)
 
 
 class TorchBox(gym.spaces.Box):

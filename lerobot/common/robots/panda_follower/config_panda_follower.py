@@ -46,6 +46,22 @@ class PandaConfig(RobotConfig):
         "panda_joint7": (-2.8973, 2.8973),
     })
     
+    # Default bounds for the end-effector position (in meters)
+    end_effector_bounds: dict[str, list[float]] = field(
+        default_factory=lambda: {
+            "min": [0.37, -0.19, 0.27],  # min x, y, z
+            "max": [0.71, 0.20, 0.61],  # max x, y, z
+        }
+    )
+
+    end_effector_step_sizes: dict[str, float] = field(
+        default_factory=lambda: {
+            "x": 0.02,
+            "y": 0.02,
+            "z": 0.02,
+        }
+    )
+    
     # Camera configurations (optional)
     cameras: dict[str, CameraConfig] = field(
         default_factory=lambda: {
@@ -77,25 +93,26 @@ class PandaConfig(RobotConfig):
                 raise ValueError(
                     f"max_relative_target keys must match joint names: {expected_joints}"
                 )
-@RobotConfig.register_subclass("panda_follower_end_effector")
-@dataclass
-class PandaEndEffectorConfig(PandaConfig):
-    """Configuration for the PandaFollowerEndEffector robot."""
 
-    # Default bounds for the end-effector position (in meters)
-    end_effector_bounds: dict[str, list[float]] = field(
-        default_factory=lambda: {
-            "min": [0.37, -0.19, 0.27],  # min x, y, z
-            "max": [0.71, 0.20, 0.61],  # max x, y, z
-        }
-    )
+# @RobotConfig.register_subclass("panda_follower_end_effector")
+# @dataclass
+# class PandaEndEffectorConfig(PandaConfig):
+#     """Configuration for the PandaFollowerEndEffector robot."""
 
-    max_gripper_pos: float = 50
+#     # Default bounds for the end-effector position (in meters)
+#     end_effector_bounds: dict[str, list[float]] = field(
+#         default_factory=lambda: {
+#             "min": [0.37, -0.19, 0.27],  # min x, y, z
+#             "max": [0.71, 0.20, 0.61],  # max x, y, z
+#         }
+#     )
 
-    end_effector_step_sizes: dict[str, float] = field(
-        default_factory=lambda: {
-            "x": 0.02,
-            "y": 0.02,
-            "z": 0.02,
-        }
-    )
+#     max_gripper_pos: float = 50
+
+#     end_effector_step_sizes: dict[str, float] = field(
+#         default_factory=lambda: {
+#             "x": 0.02,
+#             "y": 0.02,
+#             "z": 0.02,
+#         }
+#     )

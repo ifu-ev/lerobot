@@ -32,15 +32,15 @@ class API:
         ))
         return response.message
 
-    def set_cart_pose(self, pose):
+    def set_cart_pose(self, position, orientation):
         response = self.stub.SetCartPoseTarget(franka_api_pb2.Pose(
-            x = pose[0],
-            y = pose[1],
-            z = pose[2],
-            qx = pose[3],
-            qy = pose[4],
-            qz = pose[5],
-            qw = pose[6],
+            x = position[0],
+            y = position[1],
+            z = position[2],
+            qx = orientation[0],
+            qy = orientation[1],
+            qz = orientation[2],
+            qw = orientation[3],
         ))
         return response.message    
     

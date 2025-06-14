@@ -259,7 +259,17 @@ class PandaRobot(Robot):
         joint_angles = self.api.get_joint_position()
         response = {f"{joint}.pos": float(joint_angles[i]) for i, joint in enumerate(self.joint_names)}
         return response
+    
+    def send_cart_pose_action(self, target_pose):
+        if not self.is_connected:
+            raise DeviceNotConnectedError(f"{self} is not connected")
+        response_msg = self.api.set_cart_pose(target_pose)
+        response = "some infos"
+        return response       
 
+    def get_pose(self):
+        cart_pose = self.api.get_cart_pose()
+        return cart_pose
         
     def disconnect(self) -> None:
         """Disconnect from the robot."""

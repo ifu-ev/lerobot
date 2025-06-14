@@ -2,16 +2,16 @@
     "type": "gym_manipulator",
     "robot": {
         "type": "panda_follower",
-        "port": "IP ADDRESS",
-        "cameras": {
+        "ip": "127.0.0.1:50051",
+         "cameras": {
             "front": {
                 "type": "opencv",
-                "index_or_path": 0,
-                "height": 720,
-                "width": 1280,
+                "index_or_path": '/dev/video4',
+                "height": 480,
+                "width": 640,
                 "fps": 30
             }
-        },
+         },
         "end_effector_bounds": {
             "min": [
                 0.37,
@@ -32,7 +32,7 @@
     },
     "teleop": {
         "type": "panda_leader",
-        "use_gripper": false
+        "ip": "127.0.0.1:50051"
     },
     "wrapper": {
         "display_cameras": false,

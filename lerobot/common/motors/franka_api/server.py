@@ -6,8 +6,8 @@ import time
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped, WrenchStamped
 
-import franka_api_pb2
-import franka_api_pb2_grpc
+import lerobot.common.motors.franka_api.franka_api_pb2 as franka_api_pb2
+import lerobot.common.motors.franka_api.franka_api_pb2_grpc as franka_api_pb2_grpc
 
 class FrankaAPI(franka_api_pb2_grpc.FrankaServiceServicer):
     def __init__(self):

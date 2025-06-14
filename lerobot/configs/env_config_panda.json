@@ -1,0 +1,109 @@
+{
+    "type": "gym_manipulator",
+    "robot": {
+        "type": "panda_follower",
+        "port": "IP ADDRESS",
+        "cameras": {
+            "front": {
+                "type": "opencv",
+                "index_or_path": 0,
+                "height": 720,
+                "width": 1280,
+                "fps": 30
+            }
+        },
+        "end_effector_bounds": {
+            "min": [
+                0.37,
+                -0.19,
+                0.27
+            ],
+            "max": [
+                0.71,
+                0.20,
+                0.61
+            ]
+        },
+        "end_effector_step_sizes": {
+            "x": 0.025,
+            "y": 0.025,
+            "z": 0.025
+        }
+    },
+    "teleop": {
+        "type": "panda_leader",
+        "use_gripper": false
+    },
+    "wrapper": {
+        "display_cameras": false,
+        "add_joint_velocity_to_observation": true,
+        "add_current_to_observation": false,
+        "add_ee_pose_to_observation": true,
+        "crop_params_dict": {
+            "observation.images.front": [
+                270,
+                170,
+                90,
+                190
+            ]
+        },
+        "resize_size": [
+            128,
+            128
+        ],
+        "control_time_s": 20.0,
+        "use_gripper": false,
+        "gripper_quantization_threshold": null,
+        "gripper_penalty": -0.02,
+        "gripper_penalty_in_reward": false,
+        "fixed_reset_joint_positions": [
+            0.0,
+            0.0,
+            0.0,
+            90.0,
+            0.0,
+            5.0
+        ],
+        "reset_time_s": 2.5,
+        "control_mode": "panda_leader"
+    },
+    "name": "real_robot",
+    "mode": null,
+    "repo_id": null,
+    "dataset_root": null,
+    "task": "",
+    "num_episodes": 2,
+    "episode": 0,
+    "pretrained_policy_name_or_path": null,
+    "device": "cpu",
+    "push_to_hub": false,
+    "fps": 10,
+    "features": {
+        "observation.images.front": {
+            "type": "VISUAL",
+            "shape": [
+                3,
+                128,
+                128
+            ]
+        },
+        "observation.state": {
+            "type": "STATE",
+            "shape": [
+                10
+            ]
+        },
+        "action": {
+            "type": "ACTION",
+            "shape": [
+                3
+            ]
+        }
+    },
+    "features_map": {
+        "observation.images.front": "observation.images.side",
+        "observation.state": "observation.state",
+        "action": "action"
+    },
+    "reward_classifier_pretrained_path": null
+}

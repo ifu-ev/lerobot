@@ -55,12 +55,14 @@ from lerobot.common.robots import (  # noqa: F401
     RobotConfig,
     make_robot_from_config,
     so100_follower,
+    panda_follower
 )
 from lerobot.common.teleoperators import (
     gamepad,  # noqa: F401
     keyboard,  # noqa: F401
     make_teleoperator_from_config,
     so101_leader,  # noqa: F401
+    panda_leader
 )
 from lerobot.common.teleoperators.gamepad.teleop_gamepad import GamepadTeleop
 from lerobot.common.teleoperators.keyboard.teleop_keyboard import KeyboardEndEffectorTeleop

@@ -50,7 +50,7 @@ class PandaConfig(RobotConfig):
     cameras: dict[str, CameraConfig] = field(
         default_factory=lambda: {
             "wrist": RealSenseCameraConfig(
-                serial_number_or_name="817612070256",
+                serial_number_or_name="038322070566",
                 fps=30,
                 width=640,
                 height=480,

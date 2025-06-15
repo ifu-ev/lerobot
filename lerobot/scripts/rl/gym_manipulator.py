@@ -260,7 +260,7 @@ class RobotEnv(gym.Env):
         self.current_step = 0
         self.episode_data = None
 
-        self._joint_names = [f"{key}.pos" for key in self.robot.bus.motors]
+        self._joint_names = [f"{key}" for key in self.robot._joint_features]
         self._image_keys = self.robot.cameras.keys()
 
         # Read initial joint positions using the bus
@@ -273,7 +273,9 @@ class RobotEnv(gym.Env):
     def _get_observation(self) -> np.ndarray:
         """Helper to convert a dictionary from bus.sync_read to an ordered numpy array."""
         obs_dict = self.robot.get_observation()
-        joint_positions = np.array([obs_dict[name] for name in self._joint_names], dtype=np.float32)
+        # joint_positions = np.array([obs_dict[name] for name in self._joint_names], dtype=np.float32)
+        joint_pos = self.robot.get_pose()
+        joint_positions = np.array([joint_pos.x, joint_pos.y, joint_pos.z])
 
         images = {key: obs_dict[key] for key in self._image_keys}
         return {"agent_pos": joint_positions, "pixels": images}
@@ -296,7 +298,7 @@ class RobotEnv(gym.Env):
 
         # Define observation spaces for images and other states.
         if "pixels" in example_obs:
-            prefix = "observation.images" if len(example_obs["pixels"]) > 1 else "observation.image"
+            prefix = "observation.images" #if len(example_obs["pixels"]) > 1 else "observation.image"
             observation_spaces = {
                 f"{prefix}.{key}": gym.spaces.Box(
                     low=0, high=255, shape=example_obs["pixels"][key].shape, dtype=np.uint8
@@ -347,7 +349,7 @@ class RobotEnv(gym.Env):
         """
         super().reset(seed=seed, options=options)
 
-        self.robot.reset()
+        reset_follower_position(self.robot, None)
 
         # Capture the initial observation.
         observation = self._get_observation()
@@ -378,12 +380,13 @@ class RobotEnv(gym.Env):
         """
         self.current_joint_positions = self._get_observation()["agent_pos"]
 
-        action_dict = {"delta_x": action[0], "delta_y": action[1], "delta_z": action[2]}
+        action_dict = [action[0], action[1], action[2]]
+        print(action)
 
         # 1.0 action corresponds to no-op action
-        action_dict["gripper"] = action[3] if self.use_gripper else 1.0
+        # action_dict["gripper"] = action[3] if self.use_gripper else 1.0
 
-        self.robot.send_action(action_dict)
+        self.robot.send_cart_pose_action(action_dict)
 
         if self.display_cameras:
             self.render()
@@ -434,7 +437,7 @@ class AddJointVelocityToObservation(gym.ObservationWrapper):
     and extends the observation space to include these velocities.
     """
 
-    def __init__(self, env, joint_velocity_limits=100.0, fps=30, num_dof=6):
+    def __init__(self, env, joint_velocity_limits=100.0, fps=30, num_dof=3):
         """
         Initialize the joint velocity wrapper.
 
@@ -491,7 +494,7 @@ class AddCurrentToObservation(gym.ObservationWrapper):
     from each motor, providing information about the forces being applied.
     """
 
-    def __init__(self, env, max_current=500, num_dof=6):
+    def __init__(self, env, max_current=500, num_dof=3):
         """
         Initialize the current observation wrapper.
 
@@ -857,7 +860,7 @@ class ResetWrapper(gym.Wrapper):
             log_say("Reset the environment done.", play_sounds=True)
 
             if hasattr(self.env, "robot_leader"):
-                self.env.robot_leader.bus.sync_write("Torque_Enable", 1)
+                # self.env.robot_leader.bus.sync_write("Torque_Enable", 1)
                 log_say("Reset the leader robot.", play_sounds=True)
                 reset_follower_position(self.env.robot_leader, self.reset_pose)
                 log_say("Reset the leader robot done.", play_sounds=True)
@@ -1119,7 +1122,9 @@ class EEObservationWrapper(gym.ObservationWrapper):
         """
         current_joint_pos = self.unwrapped._get_observation()["agent_pos"]
 
-        current_ee_pos = self.kinematics.forward_kinematics(current_joint_pos, frame="gripper_tip")[:3, 3]
+        # current_ee_pos = self.kinematics.forward_kinematics(current_joint_pos, frame="gripper_tip")[:3, 3]
+        current_ee = self.robot.get_pose()
+        current_ee_pos = [current_ee.x, current_ee.y, current_ee.z]
         observation["agent_pos"] = np.concatenate([observation["agent_pos"], current_ee_pos], -1)
         return observation
 
@@ -1180,11 +1185,11 @@ class BaseLeaderControlWrapper(gym.Wrapper):
         # With lower gains we can manually move the leader arm without risk of injury to ourselves or the robot
         # With higher gains, it would be dangerous and difficult to modify the leader's pose while torque is enabled
         # Default value for P_coeff is 32
-        self.robot_leader.bus.sync_write("Torque_Enable", 1)
-        for motor in self.robot_leader.bus.motors:
-            self.robot_leader.bus.write("P_Coefficient", motor, 16)
-            self.robot_leader.bus.write("I_Coefficient", motor, 0)
-            self.robot_leader.bus.write("D_Coefficient", motor, 16)
+        # self.robot_leader.bus.sync_write("Torque_Enable", 1)''
+        # for motor in self.robot_leader.bus.motors:
+        #     self.robot_leader.bus.write("P_Coefficient", motor, 16)
+        #     self.robot_leader.bus.write("I_Coefficient", motor, 0)
+        #     self.robot_leader.bus.write("D_Coefficient", motor, 16)
 
         self.leader_tracking_error_queue = deque(maxlen=4)
         self._init_keyboard_listener()
@@ -1275,8 +1280,10 @@ class BaseLeaderControlWrapper(gym.Wrapper):
         self.leader_tracking_error_queue.append(np.linalg.norm(follower_pos[:-1] - leader_pos[:-1]))
 
         # [:3, 3] Last column of the transformation matrix corresponds to the xyz translation
-        leader_ee = self.kinematics.forward_kinematics(leader_pos, frame="gripper_tip")[:3, 3]
-        follower_ee = self.kinematics.forward_kinematics(follower_pos, frame="gripper_tip")[:3, 3]
+        # leader_ee = self.kinematics.forward_kinematics(leader_pos, frame="gripper_tip")[:3, 3]
+        leader_ee = self.robot_leader.get_pose()
+        # follower_ee = self.kinematics.forward_kinematics(follower_pos, frame="gripper_tip")[:3, 3]
+        follower_ee = self.robot_follower.get_pose()
 
         action = np.clip(leader_ee - follower_ee, -self.end_effector_step_sizes, self.end_effector_step_sizes)
         # Normalize the action to the range [-1, 1]
@@ -1312,22 +1319,45 @@ class BaseLeaderControlWrapper(gym.Wrapper):
         This method synchronizes the leader robot position with the follower.
         """
 
-        prev_leader_pos_dict = self.robot_leader.bus.sync_read("Present_Position")
-        prev_leader_pos = np.array(
-            [prev_leader_pos_dict[name] for name in prev_leader_pos_dict], dtype=np.float32
-        )
+        # prev_leader_pos_dict = self.robot_leader.bus.sync_read("Present_Position")
+        # prev_leader_pos = np.array(
+        #     [prev_leader_pos_dict[name] for name in prev_leader_pos_dict], dtype=np.float32
+        # )
 
-        if not self.leader_torque_enabled:
-            self.robot_leader.bus.sync_write("Torque_Enable", 1)
-            self.leader_torque_enabled = True
+        # if not self.leader_torque_enabled:
+        #     self.robot_leader.bus.sync_write("Torque_Enable", 1)
+        #     self.leader_torque_enabled = True
 
-        follower_pos_dict = self.robot_follower.bus.sync_read("Present_Position")
-        follower_pos = np.array([follower_pos_dict[name] for name in follower_pos_dict], dtype=np.float32)
+        # follower_pos_dict = self.robot_follower.bus.sync_read("Present_Position")
+        # follower_pos = np.array([follower_pos_dict[name] for name in follower_pos_dict], dtype=np.float32)
 
-        goal_pos = {f"{motor}": follower_pos[i] for i, motor in enumerate(self.robot_leader.bus.motors)}
-        self.robot_leader.bus.sync_write("Goal_Position", goal_pos)
+        # goal_pos = {f"{motor}": follower_pos[i] for i, motor in enumerate(self.robot_leader.bus.motors)}
+        # self.robot_leader.bus.sync_write("Goal_Position", goal_pos)
 
-        self.leader_tracking_error_queue.append(np.linalg.norm(follower_pos[:-1] - prev_leader_pos[:-1]))
+        # self.leader_tracking_error_queue.append(np.linalg.norm(follower_pos[:-1] - prev_leader_pos[:-1]))
+
+        follower_pose = self.robot_follower.get_pose()
+        
+        target_pose_cmd = [
+            follower_pose.x,
+            follower_pose.y,
+            follower_pose.z,
+            follower_pose.qx,
+            follower_pose.qy,
+            follower_pose.qz,
+            follower_pose.qw,
+            
+        ]
+
+        self.robot_leader.send_cart_pose_action(target_pose_cmd)
+
+        leader_pose = self.robot_leader.get_pose()
+
+        follower_ee_pos = np.array([follower_pose.x,follower_pose.y,follower_pose.z])
+        leader_ee_pos = np.array([leader_pose.x, leader_pose.y, leader_pose.z])
+        
+        error = np.linalg.norm(follower_ee_pos - leader_ee_pos)
+        self.leader_tracking_error_queue.append(error)
 
     def step(self, action):
         """
@@ -1355,7 +1385,7 @@ class BaseLeaderControlWrapper(gym.Wrapper):
         info["action_intervention"] = action if is_intervention else None
 
         self.prev_leader_gripper = np.clip(
-            self.robot_leader.bus.sync_read("Present_Position")["gripper"],
+            self.robot_leader.get_pose(),
             0,
             self.robot_follower.config.max_gripper_pos,
         )

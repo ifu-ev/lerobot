@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import franka_api_pb2 as franka__api__pb2
+import lerobot.common.motors.franka_api.franka_api_pb2 as franka__api__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__

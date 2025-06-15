@@ -3,15 +3,15 @@
     "robot": {
         "type": "panda_follower",
         "ip": "127.0.0.1:50051",
-         "cameras": {
+        "cameras":{
             "front": {
-                "type": "opencv",
-                "index_or_path": '/dev/video4',
-                "height": 480,
-                "width": 640,
-                "fps": 30
+                "type": "intelrealsense",
+                "serial_number_or_name":"038322070566",
+                "fps":30,
+                "width":640,
+                "height":480
             }
-         },
+        },
         "end_effector_bounds": {
             "min": [
                 0.37,
@@ -65,7 +65,7 @@
             5.0
         ],
         "reset_time_s": 2.5,
-        "control_mode": "panda_leader"
+        "control_mode": "leader"
     },
     "name": "real_robot",
     "mode": null,

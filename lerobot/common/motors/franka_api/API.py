@@ -33,7 +33,33 @@ class API:
         return response.message
 
     def set_cart_pose(self, pose):
-        response = self.stub.SetCartPoseTarget(franka_api_pb2.Pose(
+
+        if len(pose) == 3:
+            position_to_send = pose
+
+            current_pose_obj = self.get_cart_pose()
+            print(current_pose_obj)
+            orientation_to_send = [
+                current_pose_obj.qx,
+                current_pose_obj.qy,
+                current_pose_obj.qz,
+                current_pose_obj.qw
+            ]
+
+            
+            response = self.stub.SetCartPoseTarget(franka_api_pb2.Pose(
+                x = position_to_send[0],
+                y = position_to_send[1],
+                z = position_to_send[2],
+                qx = orientation_to_send[0],
+                qy = orientation_to_send[1],
+                qz = orientation_to_send[2],
+                qw = orientation_to_send[3],
+            ))
+            return response.message    
+            
+        elif len(pose) == 7:
+            response = self.stub.SetCartPoseTarget(franka_api_pb2.Pose(
             x = pose[0],
             y = pose[1],
             z = pose[2],
@@ -42,5 +68,18 @@ class API:
             qz = pose[5],
             qw = pose[6],
         ))
-        return response.message    
+            return response.message 
+        else:
+            raise ValueError(f"Invalid Pose")
+        
+        # response = self.stub.SetCartPoseTarget(franka_api_pb2.Pose(
+        #     x = position_to_send[0],
+        #     y = position_to_send[1],
+        #     z = position_to_send[2],
+        #     qx = orientation_to_send[3],
+        #     qy = orientation_to_send[4],
+        #     qz = orientation_to_send[5],
+        #     qw = orientation_to_send[6],
+        # ))
+        # return response.message    
     

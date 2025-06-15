@@ -16,9 +16,11 @@
 
 import logging
 import time
+import numpy as np
 
 from lerobot.common.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 from lerobot.common.motors import Motor, MotorCalibration, MotorNormMode
+from typing import Any
 
 
 from ..teleoperator import Teleoperator
@@ -87,6 +89,68 @@ class PandaTeleoperator(Teleoperator):
         logger.debug(f"{self} read action: {dt_ms:.1f}ms")
         action = {f"{joint}.pos": float(joint_angles[i]) for i, joint in enumerate(self.joint_names)}
         return action
+    
+    def get_observation(self) -> dict[str, Any]:
+        """Get current observation from the robot."""
+        if not self.is_connected:
+            raise DeviceNotConnectedError(f"{self} is not connected")
+
+        obs_dict = {}
+
+        try:
+            # Get joint positions
+            start_time = time.perf_counter()
+            joint_angles = self.api.get_joint_position()
+            
+            # Convert to observation format
+            for i, joint_name in enumerate(self.joint_names):
+                obs_dict[f"{joint_name}.pos"] = float(joint_angles[i])
+                
+            dt_ms = (time.perf_counter() - start_time) * 1e3
+            logger.debug(f"{self} read joint positions: {dt_ms:.1f}ms")
+
+
+            # # Capture camera images
+            # for cam_key, cam in self.cameras.items():
+            #     start_time = time.perf_counter()
+            #     obs_dict[cam_key] = cam.async_read()
+            #     dt_ms = (time.perf_counter() - start_time) * 1e3
+            #     logger.debug(f"{self} read {cam_key}: {dt_ms:.1f}ms")
+
+        except Exception as e:
+            logger.error(f"Error getting observation from {self}: {e}")
+            raise
+
+        return obs_dict
+
+    def send_action(self, action):
+        """Send action to the robot.
+        
+        Args:
+            action: Dictionary with joint position targets (keys ending with '.pos')
+            
+        Returns:
+            The actual action sent (potentially clipped for safety)
+        """
+        if not self.is_connected:
+            raise DeviceNotConnectedError(f"{self} is not connected")
+        # action = self._validate_joint_positions(action)
+        action_array = np.array([action[joint + ".pos"] for joint in self.joint_names], dtype=np.float32)
+        response_msg = self.api.set_joint_position(list(action_array))
+        joint_angles = self.api.get_joint_position()
+        response = {f"{joint}.pos": float(joint_angles[i]) for i, joint in enumerate(self.joint_names)}
+        return response
+    
+    def send_cart_pose_action(self, target_pose):
+        if not self.is_connected:
+            raise DeviceNotConnectedError(f"{self} is not connected")
+        response_msg = self.api.set_cart_pose(target_pose)
+        response = "some infos"
+        return response  
+    
+    def get_pose(self):
+        cart_pose = self.api.get_cart_pose()
+        return cart_pose
 
     def send_feedback(self, feedback: dict[str, float]) -> None:
         raise NotImplementedError

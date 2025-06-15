@@ -28,6 +28,8 @@ from ..utils import ensure_safe_goal_position
 from ...motors.franka_api.API import API
 from .config_panda_follower import PandaConfig
 
+from dataclasses import dataclass, field
+
 logger = logging.getLogger(__name__)
 
 
@@ -56,6 +58,10 @@ class PandaRobot(Robot):
             "panda_joint1", "panda_joint2", "panda_joint3", "panda_joint4",
             "panda_joint5", "panda_joint6", "panda_joint7"
         ]
+        self.end_effector_bounds: dict[str, list[float]] = {
+            "min": [0.37, -0.19, 0.27],  # min x, y, z
+            "max": [0.71, 0.20, 0.61],  # max x, y, z
+        }
 
     @property
     def _joint_features(self) -> dict[str, type]:
@@ -270,7 +276,11 @@ class PandaRobot(Robot):
     def get_pose(self):
         cart_pose = self.api.get_cart_pose()
         return cart_pose
-        
+    
+    def get_joints(self):
+        joint_angles = self.api.get_joint_position()
+        return joint_angles
+    
     def disconnect(self) -> None:
         """Disconnect from the robot."""
         if not self.is_connected:

@@ -48,5 +48,10 @@ def make_teleoperator_from_config(config: TeleoperatorConfig) -> Teleoperator:
     elif config.type == "panda_leader":
         from .panda_leader import PandaTeleoperator
         return PandaTeleoperator(config)
+    
+    elif config.type == "uf850_leader":
+        from .uf850_leader import Uf850Teleoperator
+        
+        return Uf850Teleoperator(config)
     else:
         raise ValueError(config.type)

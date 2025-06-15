@@ -6,10 +6,10 @@ import time
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped, WrenchStamped
 
-import franka_api_pb2
-import franka_api_pb2_grpc
+import uf850_api_pb2
+import uf850_api_pb2_grpc
 
-class FrankaAPI(franka_api_pb2_grpc.FrankaServiceServicer):
+class Uf850API(uf850_api_pb2_grpc.Uf850ServiceServicer):
     def __init__(self):
         self.joint_state = None
         self.pose = None
@@ -42,7 +42,7 @@ class FrankaAPI(franka_api_pb2_grpc.FrankaServiceServicer):
 
     def GetJointState(self, request, context):
         js = self.joint_state
-        return franka_api_pb2.JointState(
+        return uf850_api_pb2.JointState(
             name=list(js.name),
             position=list(js.position),
             velocity=list(js.velocity),
@@ -52,7 +52,7 @@ class FrankaAPI(franka_api_pb2_grpc.FrankaServiceServicer):
     def GetEEFPose(self, request, context):
         p = self.pose.pose.position
         o = self.pose.pose.orientation
-        return franka_api_pb2.Pose(
+        return uf850_api_pb2.Pose(
             x=p.x, y=p.y, z=p.z,
             qx=o.x, qy=o.y, qz=o.z, qw=o.w
         )
@@ -60,7 +60,7 @@ class FrankaAPI(franka_api_pb2_grpc.FrankaServiceServicer):
     def GetWrench(self, request, context):
         f = self.wrench.wrench.force
         t = self.wrench.wrench.torque
-        return franka_api_pb2.Wrench(
+        return uf850_api_pb2.Wrench(
             fx=f.x, fy=f.y, fz=f.z,
             tx=t.x, ty=t.y, tz=t.z
         )
@@ -72,14 +72,14 @@ class FrankaAPI(franka_api_pb2_grpc.FrankaServiceServicer):
             cmd.position = request.position
             rospy.loginfo(f"Publishing joint target: {cmd}")
             self.joint_cmd_pub.publish(cmd)
-            return franka_api_pb2.StatusResponse(success=True, message="Command sent")
+            return uf850_api_pb2.StatusResponse(success=True, message="Command sent")
         except Exception as e:
-            return franka_api_pb2.StatusResponse(success=False, message=str(e))
+            return uf850_api_pb2.StatusResponse(success=False, message=str(e))
 
 def serve():
-    rospy.init_node('franka_api_server')
+    rospy.init_node('uf850_api_server')
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    franka_api_pb2_grpc.add_FrankaServiceServicer_to_server(FrankaAPI(), server)
+    uf850_api_pb2_grpc.add_Uf850ServiceServicer_to_server(Uf850API(), server)
     server.add_insecure_port('[::]:50051')
     server.start()
     rospy.loginfo("gRPC server started on port 50051.")

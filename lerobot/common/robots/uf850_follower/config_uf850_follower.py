@@ -37,12 +37,12 @@ class Uf850Config(RobotConfig):
     
     # Joint limits (in radians) - Uf850's actual joint limits
     joint_limits: dict[str, tuple[float, float]] = field(default_factory=lambda: {
-        "uf850_joint1": (-2.7437, 2.7437),
-        "uf850_joint2": (-1.7628, 1.7628),
-        "uf850_joint3": (-2.8973, 2.8973),
-        "uf850_joint4": (-3.0421, -0.1518),
-        "uf850_joint5": (-2.8065, 2.8065),
-        "uf850_joint6": (0.5445, 3.7525),
+        "uf850_joint1": (-3.1415, 3.1415),
+        "uf850_joint2": (-2.3038, 2.3038),
+        "uf850_joint3": (-4.2236, 0.0611),
+        "uf850_joint4": (-3.1415, 3.1415),
+        "uf850_joint5": (-2.1642, 2.1642),
+        "uf850_joint6": (-3.1415, 3.1415),
         #"panda_joint7": (-2.8973, 2.8973),
     })
     

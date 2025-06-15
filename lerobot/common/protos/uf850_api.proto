@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package franka;
+package uf850;
 
 message JointState {
   repeated string name = 1;
@@ -16,7 +16,6 @@ message Pose {
   double qx = 4;
   double qy = 5;
   double qz = 6;
-  double qw = 7;
 }
 
 message Wrench {
@@ -35,7 +34,7 @@ message StatusResponse {
   string message = 2;
 }
 
-service FrankaService {
+service Uf850Service {
   rpc GetJointState(Empty) returns (JointState);
   rpc GetEEFPose(Empty) returns (Pose);
   rpc GetWrench(Empty) returns (Wrench);

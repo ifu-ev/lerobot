@@ -53,6 +53,10 @@ def make_robot_from_config(config: RobotConfig) -> Robot:
         from .panda_follower import PandaRobot
 
         return PandaRobot(config)
+    elif config.type == "uf850_follower":
+        from .uf850_follower import Uf850Robot
+
+        return Uf850Robot(config)    
     else:
         raise ValueError(config.type)
 

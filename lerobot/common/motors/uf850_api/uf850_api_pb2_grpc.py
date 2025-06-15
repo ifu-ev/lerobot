@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import uf850_api_pb2 as uf850__api__pb2
+import lerobot.common.motors.uf850_api.uf850_api_pb2 as uf850__api__pb2
 
 GRPC_GENERATED_VERSION = '1.70.0'
 GRPC_VERSION = grpc.__version__

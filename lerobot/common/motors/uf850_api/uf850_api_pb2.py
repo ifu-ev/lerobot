@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fuf850_api.proto\x12\x05uf850\"N\n\nJointState\x12\x0c\n\x04name\x18\x01 \x03(\t\x12\x10\n\x08position\x18\x02 \x03(\x01\x12\x10\n\x08velocity\x18\x03 \x03(\x01\x12\x0e\n\x06\x65\x66\x66ort\x18\x04 \x03(\x01\"K\n\x04Pose\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\t\n\x01z\x18\x03 \x01(\x01\x12\n\n\x02qx\x18\x04 \x01(\x01\x12\n\n\x02qy\x18\x05 \x01(\x01\x12\n\n\x02qz\x18\x06 \x01(\x01\"P\n\x06Wrench\x12\n\n\x02\x66x\x18\x01 \x01(\x01\x12\n\n\x02\x66y\x18\x02 \x01(\x01\x12\n\n\x02\x66z\x18\x03 \x01(\x01\x12\n\n\x02tx\x18\x04 \x01(\x01\x12\n\n\x02ty\x18\x05 \x01(\x01\x12\n\n\x02tz\x18\x06 \x01(\x01\"\x07\n\x05\x45mpty\"2\n\x0eStatusResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xcf\x01\n\x0cUf850Service\x12\x30\n\rGetJointState\x12\x0c.uf850.Empty\x1a\x11.uf850.JointState\x12\'\n\nGetEEFPose\x12\x0c.uf850.Empty\x1a\x0b.uf850.Pose\x12(\n\tGetWrench\x12\x0c.uf850.Empty\x1a\r.uf850.Wrench\x12:\n\x0eSetJointTarget\x12\x11.uf850.JointState\x1a\x15.uf850.StatusResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0fuf850_api.proto\x12\x05uf850\"N\n\nJointState\x12\x0c\n\x04name\x18\x01 \x03(\t\x12\x10\n\x08position\x18\x02 \x03(\x01\x12\x10\n\x08velocity\x18\x03 \x03(\x01\x12\x0e\n\x06\x65\x66\x66ort\x18\x04 \x03(\x01\"W\n\x04Pose\x12\t\n\x01x\x18\x01 \x01(\x01\x12\t\n\x01y\x18\x02 \x01(\x01\x12\t\n\x01z\x18\x03 \x01(\x01\x12\n\n\x02qx\x18\x04 \x01(\x01\x12\n\n\x02qy\x18\x05 \x01(\x01\x12\n\n\x02qz\x18\x06 \x01(\x01\x12\n\n\x02qw\x18\x07 \x01(\x01\"P\n\x06Wrench\x12\n\n\x02\x66x\x18\x01 \x01(\x01\x12\n\n\x02\x66y\x18\x02 \x01(\x01\x12\n\n\x02\x66z\x18\x03 \x01(\x01\x12\n\n\x02tx\x18\x04 \x01(\x01\x12\n\n\x02ty\x18\x05 \x01(\x01\x12\n\n\x02tz\x18\x06 \x01(\x01\"\x07\n\x05\x45mpty\"2\n\x0eStatusResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t2\xcf\x01\n\x0cUf850Service\x12\x30\n\rGetJointState\x12\x0c.uf850.Empty\x1a\x11.uf850.JointState\x12\'\n\nGetEEFPose\x12\x0c.uf850.Empty\x1a\x0b.uf850.Pose\x12(\n\tGetWrench\x12\x0c.uf850.Empty\x1a\r.uf850.Wrench\x12:\n\x0eSetJointTarget\x12\x11.uf850.JointState\x1a\x15.uf850.StatusResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -34,13 +34,13 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_JOINTSTATE']._serialized_start=26
   _globals['_JOINTSTATE']._serialized_end=104
   _globals['_POSE']._serialized_start=106
-  _globals['_POSE']._serialized_end=181
-  _globals['_WRENCH']._serialized_start=183
-  _globals['_WRENCH']._serialized_end=263
-  _globals['_EMPTY']._serialized_start=265
-  _globals['_EMPTY']._serialized_end=272
-  _globals['_STATUSRESPONSE']._serialized_start=274
-  _globals['_STATUSRESPONSE']._serialized_end=324
-  _globals['_UF850SERVICE']._serialized_start=327
-  _globals['_UF850SERVICE']._serialized_end=534
+  _globals['_POSE']._serialized_end=193
+  _globals['_WRENCH']._serialized_start=195
+  _globals['_WRENCH']._serialized_end=275
+  _globals['_EMPTY']._serialized_start=277
+  _globals['_EMPTY']._serialized_end=284
+  _globals['_STATUSRESPONSE']._serialized_start=286
+  _globals['_STATUSRESPONSE']._serialized_end=336
+  _globals['_UF850SERVICE']._serialized_start=339
+  _globals['_UF850SERVICE']._serialized_end=546
 # @@protoc_insertion_point(module_scope)

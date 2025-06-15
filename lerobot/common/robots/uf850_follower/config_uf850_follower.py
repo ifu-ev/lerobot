@@ -50,7 +50,7 @@ class Uf850Config(RobotConfig):
     cameras: dict[str, CameraConfig] = field(
         default_factory=lambda: {
             "wrist": RealSenseCameraConfig(
-                serial_number_or_name="038322070511",
+                serial_number_or_name="036222070876",
                 fps=30,
                 width=640,
                 height=480,

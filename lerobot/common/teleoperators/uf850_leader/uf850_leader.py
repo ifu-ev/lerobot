@@ -24,7 +24,7 @@ from lerobot.common.motors import Motor, MotorCalibration, MotorNormMode
 from ..teleoperator import Teleoperator
 from .config_uf850_leader import Uf850TeleoperatorConfig
 
-from lerobot.common.motors.franka_api.API import *
+from lerobot.common.motors.uf850_api.API import *
 
 logger = logging.getLogger(__name__)
 

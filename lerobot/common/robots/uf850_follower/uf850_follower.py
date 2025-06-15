@@ -25,7 +25,7 @@ from lerobot.common.errors import DeviceAlreadyConnectedError, DeviceNotConnecte
 
 from ..robot import Robot
 from ..utils import ensure_safe_goal_position
-from ...motors.franka_api.API import API
+from ...motors.uf850_api.API import API
 from .config_uf850_follower import Uf850Config
 
 logger = logging.getLogger(__name__)

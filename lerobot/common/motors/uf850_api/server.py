@@ -5,6 +5,7 @@ import time
 
 from sensor_msgs.msg import JointState
 from geometry_msgs.msg import PoseStamped, WrenchStamped
+from xarm_msgs.msg import RobotMsg 
 
 import uf850_api_pb2
 import uf850_api_pb2_grpc
@@ -15,9 +16,11 @@ class Uf850API(uf850_api_pb2_grpc.Uf850ServiceServicer):
         self.pose = None
         self.wrench = None
 
-        self.joint_state_sub = rospy.Subscriber("/joint_states", JointState, self.joint_state_cb)
-        self.pose_sub = rospy.Subscriber("/cartesian_pose", PoseStamped, self.pose_cb)
-        self.wrench_sub = rospy.Subscriber("/force_torque_ext", WrenchStamped, self.wrench_cb)
+        self.joint_state_sub = rospy.Subscriber("/ufactory/joint_states", JointState, self.joint_state_cb)
+        #self.pose_sub = rospy.Subscriber("/cartesian_pose", PoseStamped, self.pose_cb)
+        self.pose_sub = rospy.Subscriber("/ufactory/xarm_states", RobotMsg, self.pose_cb)
+        
+        self.wrench_sub = rospy.Subscriber("/ufactory/uf_ftsensor_ext_states", WrenchStamped, self.wrench_cb)
 
         self.joint_cmd_pub = rospy.Publisher("/equilibrium_configuration", JointState, queue_size=1)
 
@@ -35,7 +38,7 @@ class Uf850API(uf850_api_pb2_grpc.Uf850ServiceServicer):
         self.joint_state = msg
 
     def pose_cb(self, msg):
-        self.pose = msg
+        self.pose = msg.pose
 
     def wrench_cb(self, msg):
         self.wrench = msg
@@ -50,11 +53,11 @@ class Uf850API(uf850_api_pb2_grpc.Uf850ServiceServicer):
         )
 
     def GetEEFPose(self, request, context):
-        p = self.pose.pose.position
-        o = self.pose.pose.orientation
+        p = list(self.pose[:3])
+        o = list(self.pose[-3:])
         return uf850_api_pb2.Pose(
-            x=p.x, y=p.y, z=p.z,
-            qx=o.x, qy=o.y, qz=o.z, qw=o.w
+            x=p[0], y=p[1], z=p[2],
+            qx=o[0], qy=o[1], qz=o[2], qw=0.0 # TODO: change from euler to quaternion (or new message type in protobuf)
         )
 
     def GetWrench(self, request, context):

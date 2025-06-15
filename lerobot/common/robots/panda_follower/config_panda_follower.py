@@ -61,6 +61,8 @@ class PandaConfig(RobotConfig):
             "z": 0.02,
         }
     )
+    use_gripper = False
+    max_gripper_pos: float = 0.1
     
     # Camera configurations (optional)
     cameras: dict[str, CameraConfig] = field(
@@ -107,12 +109,11 @@ class PandaEndEffectorConfig(PandaConfig):
         }
     )
 
-    max_gripper_pos: float = 50
 
     end_effector_step_sizes: dict[str, float] = field(
         default_factory=lambda: {
-            "x": 0.02,
-            "y": 0.02,
-            "z": 0.02,
+            "x": 0.0002,
+            "y": 0.0002,
+            "z": 0.0002,
         }
     )

@@ -144,7 +144,9 @@ class PandaTeleoperator(Teleoperator):
     def send_cart_pose_action(self, target_pose):
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected")
+        print('Target Pose:',target_pose)
         response_msg = self.api.set_cart_pose(target_pose)
+        print('Pose reached.')
         response = "some infos"
         return response  
     

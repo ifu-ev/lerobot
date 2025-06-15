@@ -25,9 +25,9 @@
             ]
         },
         "end_effector_step_sizes": {
-            "x": 0.025,
-            "y": 0.025,
-            "z": 0.025
+            "x": 0.00025,
+            "y": 0.00025,
+            "z": 0.00025
         }
     },
     "teleop": {
@@ -36,15 +36,15 @@
     },
     "wrapper": {
         "display_cameras": false,
-        "add_joint_velocity_to_observation": true,
+        "add_joint_velocity_to_observation": false,
         "add_current_to_observation": false,
-        "add_ee_pose_to_observation": true,
+        "add_ee_pose_to_observation": false,
         "crop_params_dict": {
             "observation.images.front": [
-                270,
-                170,
-                90,
-                190
+                0,
+                0,
+                480,
+                640
             ]
         },
         "resize_size": [
@@ -56,27 +56,19 @@
         "gripper_quantization_threshold": null,
         "gripper_penalty": -0.02,
         "gripper_penalty_in_reward": false,
-        "fixed_reset_joint_positions": [
-            0.0,
-            0.0,
-            0.0,
-            90.0,
-            0.0,
-            5.0
-        ],
         "reset_time_s": 2.5,
         "control_mode": "leader"
     },
     "name": "real_robot",
-    "mode": null,
-    "repo_id": null,
+    "mode": "record",
+    "repo_id": "davidschner/franka_25",
     "dataset_root": null,
     "task": "",
-    "num_episodes": 2,
+    "num_episodes": 12,
     "episode": 0,
     "pretrained_policy_name_or_path": null,
     "device": "cpu",
-    "push_to_hub": false,
+    "push_to_hub": true,
     "fps": 10,
     "features": {
         "observation.images.front": {

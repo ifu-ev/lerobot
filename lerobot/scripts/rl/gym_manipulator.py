@@ -90,8 +90,10 @@ def reset_follower_position(robot_arm, target_position):
     #     busy_wait(0.015)
     current_postion = robot_arm.get_pose()
     logging.info(current_postion)
-    home = [0.61, -0.01, 0.52, 0.93, -0.34, 0.02, -0.04]
+    home = [0.38, -0.01, 0.52, 0.93, -0.34, 0.02, -0.04]
+    print('Going to Home Pose.', home)
     robot_arm.send_cart_pose_action(home)
+    busy_wait(2)
 
 
 class TorchBox(gym.spaces.Box):
@@ -318,8 +320,8 @@ class RobotEnv(gym.Env):
         # Define the action space for joint positions along with setting an intervention flag.
         action_dim = 3
         bounds = {}
-        bounds["min"] = -np.ones(action_dim)
-        bounds["max"] = np.ones(action_dim)
+        bounds["min"] = np.array([0.37,-0.202,0.27])#-np.ones(action_dim)
+        bounds["max"] = np.array([0.67,0.17,0.68])#np.ones(action_dim)
 
         if self.use_gripper:
             action_dim += 1
@@ -379,14 +381,18 @@ class RobotEnv(gym.Env):
                 - info (dict): Additional debugging information including intervention status.
         """
         self.current_joint_positions = self._get_observation()["agent_pos"]
-
-        action_dict = [action[0], action[1], action[2]]
-        print(action)
+        print('current_joint_positions: ',self.current_joint_positions)
+        
+        action_dict = [action[0]*0.05, action[1]*0.05, action[2]*0.05]
+        action = np.array(self.current_joint_positions)+ np.array(action_dict)
+        print('action_dict: ', action_dict)
+        print('action: ', action)
 
         # 1.0 action corresponds to no-op action
         # action_dict["gripper"] = action[3] if self.use_gripper else 1.0
 
-        self.robot.send_cart_pose_action(action_dict)
+        # print('Target Pose_step:',action)
+        self.robot.send_cart_pose_action(action)
 
         if self.display_cameras:
             self.render()
@@ -969,13 +975,13 @@ class GripperPenaltyWrapper(gym.RewardWrapper):
         Returns:
             Tuple of (observation, reward, terminated, truncated, info) with penalty applied.
         """
-        self.last_gripper_state = self.unwrapped.robot.bus.sync_read("Present_Position")["gripper"]
+        #self.last_gripper_state = self.unwrapped.robot.bus.sync_read("Present_Position")["gripper"]
 
-        gripper_action = action[-1]
+        #gripper_action = action[-1]
         obs, reward, terminated, truncated, info = self.env.step(action)
-        gripper_penalty = self.reward(reward, gripper_action)
+        #gripper_penalty = self.reward(reward, gripper_action)
 
-        info["discrete_penalty"] = gripper_penalty
+        info["discrete_penalty"] = 0 #gripper_penalty
 
         return obs, reward, terminated, truncated, info
 
@@ -995,83 +1001,83 @@ class GripperPenaltyWrapper(gym.RewardWrapper):
         return obs, info
 
 
-class GripperActionWrapper(gym.ActionWrapper):
-    """
-    Wrapper that processes gripper control commands.
+# class GripperActionWrapper(gym.ActionWrapper):
+#     """
+#     Wrapper that processes gripper control commands.
 
-    This wrapper quantizes and processes gripper commands, adding a sleep time between
-    consecutive gripper actions to prevent rapid toggling.
-    """
+#     This wrapper quantizes and processes gripper commands, adding a sleep time between
+#     consecutive gripper actions to prevent rapid toggling.
+#     """
 
-    def __init__(self, env, quantization_threshold: float = 0.2, gripper_sleep: float = 0.0):
-        """
-        Initialize the gripper action wrapper.
+#     def __init__(self, env, quantization_threshold: float = 0.2, gripper_sleep: float = 0.0):
+#         """
+#         Initialize the gripper action wrapper.
 
-        Args:
-            env: The environment to wrap.
-            quantization_threshold: Threshold below which gripper commands are quantized to zero.
-            gripper_sleep: Minimum time in seconds between consecutive gripper commands.
-        """
-        super().__init__(env)
-        self.quantization_threshold = quantization_threshold
-        self.gripper_sleep = gripper_sleep
-        self.last_gripper_action_time = 0.0
-        self.last_gripper_action = None
+#         Args:
+#             env: The environment to wrap.
+#             quantization_threshold: Threshold below which gripper commands are quantized to zero.
+#             gripper_sleep: Minimum time in seconds between consecutive gripper commands.
+#         """
+#         super().__init__(env)
+#         self.quantization_threshold = quantization_threshold
+#         self.gripper_sleep = gripper_sleep
+#         self.last_gripper_action_time = 0.0
+#         self.last_gripper_action = None
 
-    def action(self, action):
-        """
-        Process gripper commands in the action.
+#     def action(self, action):
+#         """
+#         Process gripper commands in the action.
 
-        Args:
-            action: The original action from the agent.
+#         Args:
+#             action: The original action from the agent.
 
-        Returns:
-            Modified action with processed gripper command.
-        """
-        if self.gripper_sleep > 0.0:
-            if (
-                self.last_gripper_action is not None
-                and time.perf_counter() - self.last_gripper_action_time < self.gripper_sleep
-            ):
-                action[-1] = self.last_gripper_action
-            else:
-                self.last_gripper_action_time = time.perf_counter()
-                self.last_gripper_action = action[-1]
+#         Returns:
+#             Modified action with processed gripper command.
+#         """
+#         if self.gripper_sleep > 0.0:
+#             if (
+#                 self.last_gripper_action is not None
+#                 and time.perf_counter() - self.last_gripper_action_time < self.gripper_sleep
+#             ):
+#                 action[-1] = self.last_gripper_action
+#             else:
+#                 self.last_gripper_action_time = time.perf_counter()
+#                 self.last_gripper_action = action[-1]
 
-        gripper_command = action[-1]
-        # Gripper actions are between 0, 2
-        # we want to quantize them to -1, 0 or 1
-        gripper_command = gripper_command - 1.0
+#         gripper_command = action[-1]
+#         # Gripper actions are between 0, 2
+#         # we want to quantize them to -1, 0 or 1
+#         gripper_command = gripper_command - 1.0
 
-        if self.quantization_threshold is not None:
-            # Quantize gripper command to -1, 0 or 1
-            gripper_command = (
-                np.sign(gripper_command) if abs(gripper_command) > self.quantization_threshold else 0.0
-            )
-        gripper_command = gripper_command * self.unwrapped.robot.config.max_gripper_pos
+#         if self.quantization_threshold is not None:
+#             # Quantize gripper command to -1, 0 or 1
+#             gripper_command = (
+#                 np.sign(gripper_command) if abs(gripper_command) > self.quantization_threshold else 0.0
+#             )
+#         gripper_command = gripper_command * self.unwrapped.robot.config.max_gripper_pos
 
-        gripper_state = self.unwrapped.robot.bus.sync_read("Present_Position")["gripper"]
+#         #gripper_state = self.unwrapped.robot.bus.sync_read("Present_Position")["gripper"]
 
-        gripper_action_value = np.clip(
-            gripper_state + gripper_command, 0, self.unwrapped.robot.config.max_gripper_pos
-        )
-        action[-1] = gripper_action_value.item()
-        return action
+#         gripper_action_value = np.clip(
+#             gripper_state + gripper_command, 0, self.unwrapped.robot.config.max_gripper_pos
+#         )
+#         action[-1] = gripper_action_value.item()
+#         return action
 
-    def reset(self, **kwargs):
-        """
-        Reset the gripper action tracking.
+    # def reset(self, **kwargs):
+    #     """
+    #     Reset the gripper action tracking.
 
-        Args:
-            **kwargs: Keyword arguments passed to the wrapped environment's reset.
+    #     Args:
+    #         **kwargs: Keyword arguments passed to the wrapped environment's reset.
 
-        Returns:
-            The initial observation and info.
-        """
-        obs, info = super().reset(**kwargs)
-        self.last_gripper_action_time = 0.0
-        self.last_gripper_action = None
-        return obs, info
+    #     Returns:
+    #         The initial observation and info.
+    #     """
+    #     obs, info = super().reset(**kwargs)
+    #     self.last_gripper_action_time = 0.0
+    #     self.last_gripper_action = None
+    #     return obs, info
 
 
 class EEObservationWrapper(gym.ObservationWrapper):
@@ -1267,15 +1273,15 @@ class BaseLeaderControlWrapper(gym.Wrapper):
         Returns:
             Tuple of (modified_action, intervention_action).
         """
-        if self.leader_torque_enabled:
-            self.robot_leader.bus.sync_write("Torque_Enable", 0)
-            self.leader_torque_enabled = False
+        # if self.leader_torque_enabled:
+        #     self.robot_leader.bus.sync_write("Torque_Enable", 0)
+        #     self.leader_torque_enabled = False
 
-        leader_pos_dict = self.robot_leader.bus.sync_read("Present_Position")
-        follower_pos_dict = self.robot_follower.bus.sync_read("Present_Position")
+        leader_pos_dict = self.robot_leader.get_pose() #bus.sync_read("Present_Position")
+        follower_pos_dict = self.robot_follower.get_pose()#bus.sync_read("Present_Position")
 
-        leader_pos = np.array([leader_pos_dict[name] for name in leader_pos_dict], dtype=np.float32)
-        follower_pos = np.array([follower_pos_dict[name] for name in follower_pos_dict], dtype=np.float32)
+        leader_pos = np.array([leader_pos_dict.x, leader_pos_dict.y, leader_pos_dict.z])#, leader_pos_dict.qx, leader_pos_dict.qy, leader_pos_dict.qz, leader_pos_dict.qw])
+        follower_pos = np.array([follower_pos_dict.x, follower_pos_dict.y, follower_pos_dict.z])#, follower_pos_dict.qx, follower_pos_dict.qy, follower_pos_dict.qz, follower_pos_dict.qw])
 
         self.leader_tracking_error_queue.append(np.linalg.norm(follower_pos[:-1] - leader_pos[:-1]))
 
@@ -1285,7 +1291,11 @@ class BaseLeaderControlWrapper(gym.Wrapper):
         # follower_ee = self.kinematics.forward_kinematics(follower_pos, frame="gripper_tip")[:3, 3]
         follower_ee = self.robot_follower.get_pose()
 
-        action = np.clip(leader_ee - follower_ee, -self.end_effector_step_sizes, self.end_effector_step_sizes)
+        leader_ee_pos = np.array([leader_ee.x, leader_ee.y, leader_ee.z])#, leader_ee.qx, leader_ee.qy, leader_ee.qz, leader_ee.qw])
+        follower_ee_pos = np.array([follower_ee.x, follower_ee.y, follower_ee.z])#, follower_ee.qx, follower_ee.qy, follower_ee.qz, follower_ee.qw])
+
+
+        action = np.clip(leader_ee_pos - follower_ee_pos, -self.end_effector_step_sizes, self.end_effector_step_sizes)
         # Normalize the action to the range [-1, 1]
         action = action / self.end_effector_step_sizes
 
@@ -1349,6 +1359,7 @@ class BaseLeaderControlWrapper(gym.Wrapper):
             
         ]
 
+        print('Target Pose leader:',target_pose_cmd)
         self.robot_leader.send_cart_pose_action(target_pose_cmd)
 
         leader_pose = self.robot_leader.get_pose()
@@ -1382,13 +1393,20 @@ class BaseLeaderControlWrapper(gym.Wrapper):
 
         # Add intervention info
         info["is_intervention"] = is_intervention
-        info["action_intervention"] = action if is_intervention else None
+        # info["action_intervention"] = action if is_intervention else None
+        if is_intervention:
+            info["action_intervention"] = action
+        else:
+            act = self.robot_leader.get_pose()
 
-        self.prev_leader_gripper = np.clip(
-            self.robot_leader.get_pose(),
-            0,
-            self.robot_follower.config.max_gripper_pos,
-        )
+            info["action_intervention"] =  np.array([act.x, act.y, act.z])
+
+
+        # self.prev_leader_gripper = np.clip(
+        #     self.robot_leader.get_pose(),
+        #     0,
+        #     self.robot_follower.config.max_gripper_pos,
+        # )
 
         # Check for success or manual termination
         success = self.keyboard_events["episode_success"]
@@ -2141,7 +2159,7 @@ def record_dataset(env, policy, cfg):
 
             # For teleop, get action from intervention
             recorded_action = {
-                "action": info["action_intervention"].cpu().squeeze(0).float() if policy is None else action
+                "action": torch.from_numpy(info["action_intervention"]).float() if policy is None else action
             }
 
             # Process observation for dataset
@@ -2247,6 +2265,7 @@ def main(cfg: EnvConfig):
     env = make_robot_env(cfg)
 
     if cfg.mode == "record":
+        print("We are recording")
         policy = None
         if cfg.pretrained_policy_name_or_path is not None:
             from lerobot.common.policies.sac.modeling_sac import SACPolicy

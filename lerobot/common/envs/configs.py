@@ -200,7 +200,7 @@ class HILSerlRobotEnvConfig(EnvConfig):
     wrapper: Optional[EnvTransformConfig] = None
     fps: int = 10
     name: str = "real_robot"
-    mode: str = None  # Either "record", "replay", None
+    mode: str = "record" #None  # Either "record", "replay", None
     repo_id: Optional[str] = None
     dataset_root: Optional[str] = None
     task: str = ""
@@ -227,7 +227,7 @@ class HILEnvConfig(EnvConfig):
     task: str = "PandaPickCubeKeyboard-v0"
     use_viewer: bool = True
     gripper_penalty: float = 0.0
-    use_gamepad: bool = True
+    use_gamepad: bool = False
     state_dim: int = 18
     action_dim: int = 4
     fps: int = 100
